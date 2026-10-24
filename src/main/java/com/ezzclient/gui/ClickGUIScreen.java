@@ -9,6 +9,9 @@ import com.ezzclient.module.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.Click;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -387,7 +390,8 @@ public class ClickGUIScreen extends Screen {
     }
 
     // ==================== ввод ====================
-    @Override public boolean mouseClicked(double mx, double my, int button) {
+    @Override public boolean mouseClicked(Click click, boolean doubled) {
+        double mx = click.x(), my = click.y();
         for (Object[] o : clicks) {
             Rect r = (Rect) o[0];
             boolean enabled = (Boolean) o[2];
@@ -406,8 +410,7 @@ public class ClickGUIScreen extends Screen {
         // клик по поиску
         int searchX = px + PW - 164, searchY = py + 58;
         typing = mx >= searchX && mx <= searchX + 150 && my >= searchY && my <= searchY + 20 && tab.equals("MODS");
-        if (!typing) search = search;
-        return super.mouseClicked(mx, my, button);
+        return super.mouseClicked(click, doubled);
     }
 
     private double dragValue(SliderSetting s, int mx) {
@@ -415,7 +418,8 @@ public class ClickGUIScreen extends Screen {
         return s.value;
     }
 
-    @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+    @Override public boolean mouseDragged(Click click, double dx, double dy) {
+        double mx = click.x(), my = click.y();
         for (Object[] o : sliders) {
             Rect r = (Rect) o[0];
             SliderSetting s = (SliderSetting) o[1];
@@ -423,24 +427,19 @@ public class ClickGUIScreen extends Screen {
             if (sx <= mx && mx <= sx + sw) {
                 double frac = (mx - sx) / (double) sw;
                 s.set(s.min + frac * (s.max - s.min));
-                s.load(new com.google.gson.JsonObject()); // no-op, keep value
             }
         }
-        return super.mouseDragged(mx, my, button, dx, dy);
+        return super.mouseDragged(click, dx, dy);
     }
 
-    @Override public boolean mouseScrolled(double mx, double my, double h, double v) {
-        if (tab.equals("MODS")) scrollMods -= (int) Math.signum(v);
-        if (tab.equals("COSMETICS")) scrollCos -= (int) Math.signum(v) * 20;
-        return true;
-    }
-
-    @Override public boolean charTyped(char chr, int mods) {
+    @Override public boolean charTyped(CharInput input) {
+        char chr = input.codepoint() != 0 ? (char) input.codepoint() : '\0';
         if (typing) { search += chr; return true; }
-        return super.charTyped(chr, mods);
+        return super.charTyped(input);
     }
 
-    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    @Override public boolean keyPressed(KeyInput input) {
+        int keyCode = input.key();
         if (typing && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
             if (!search.isEmpty()) search = search.substring(0, search.length() - 1);
             return true;
@@ -453,7 +452,7 @@ public class ClickGUIScreen extends Screen {
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT) { close(); return true; }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override public void close() {
