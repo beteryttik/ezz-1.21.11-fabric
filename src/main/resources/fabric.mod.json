@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "ezzclient",
+  "version": "${version}",
+  "name": "Ezz Client",
+  "description": "Cosmetics, HUD modules, animations and performance boost for Minecraft 1.21.11. Everything renders only for you.",
+  "authors": [
+    "Ezz"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.ezzclient.EzzClient"
+    ]
+  },
+  "mixins": [
+    "ezzclient.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "fabric-api": "*",
+    "minecraft": "1.21.11",
+    "java": ">=21"
+  }
+}
