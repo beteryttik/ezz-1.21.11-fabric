@@ -1,22 +1,24 @@
 package com.ezzclient.cosmetics.render;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Пет — маленькая кукла рядом с плечом.
  * clone = текстура — СКИН ИГРОКА (клон твоего скина).
  * Прочие петы — свои 64x64 текстуры с той же гуманоидной раскладкой.
+ *
+ * TODO: переезд на LevelRenderEvents (1.21.10+). Старый WorldRenderContext удалён,
+ * новый рендер идёт через фазы extraction/drawing — вернём после порта.
  */
 public class PetRenderer {
     private static ModelPart model = null;
@@ -39,7 +41,7 @@ public class PetRenderer {
         small = true;
     }
 
-    public static void render(WorldRenderContext ctx) {
+    public static void render(MatrixStack ms, Vec3d cam, VertexConsumerProvider vcp) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null || mc.world == null || model == null) return;
         String pet = com.ezzclient.cosmetics.CosmeticManager.activePet;
@@ -58,10 +60,8 @@ public class PetRenderer {
         float bob = MathHelper.sin(time * 0.12f) * 0.12f;
         float yaw = Math.toRadians(mc.player.getYaw());
 
-        var cam = ctx.camera().getPos();
-        MatrixStack ms = ctx.matrixStack();
         ms.push();
-        ms.translate(mc.player.getX() - cam.x, mc.player.getY() - cam.y, mc.player.getZ() - cam.z);
+        ms.translate((float) (mc.player.getX() - cam.x), (float) (mc.player.getY() - cam.y), (float) (mc.player.getZ() - cam.z));
         ms.translate(0.55f, 1.35f + bob, -0.1f);
         ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-(float) Math.toDegrees(yaw) + 180.0f));
         ms.scale((float) scale, (float) scale, (float) scale);
@@ -71,7 +71,6 @@ public class PetRenderer {
         model.getChild("arm").pitch = MathHelper.sin(time * 0.1f) * 0.3f;
         model.getChild("leg").pitch = -MathHelper.sin(time * 0.1f) * 0.3f;
 
-        VertexConsumerProvider vcp = ctx.consumers();
         if (vcp != null) {
             VertexConsumer vc = vcp.getBuffer(RenderLayer.getEntityTranslucent(tex));
             model.render(ms, vc, 0xF000F0, OverlayTexture.DEFAULT_UV);
