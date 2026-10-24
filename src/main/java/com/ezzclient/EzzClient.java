@@ -11,7 +11,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -63,7 +62,9 @@ public class EzzClient implements ClientModInitializer {
             HudTracker.poll(l, r);
         });
 
-        // петы
-        WorldRenderEvents.AFTER_ENTITIES.register(PetRenderer::render);
+        // TODO: рендер питомцев. Старое WorldRenderEvents.AFTER_ENTITIES удалено в 1.21.9,
+        // новое API (LevelRenderEvents) требует переработки PetRenderer под фазы extraction/drawing.
+        // Вернём подписку после правки PetRenderer.java.
+        // LevelRenderEvents.?.register(PetRenderer::render);
     }
 }
