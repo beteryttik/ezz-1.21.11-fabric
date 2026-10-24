@@ -1,14 +1,18 @@
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
-    id 'java'
+    id 'fabric-loom' version '1.18.2'
 }
 
 version = project.mod_version
 group = project.maven_group
 
-base { archivesName = project.archives_base_name }
+base {
+    archivesName = project.archives_base_name
+}
 
-repositories { mavenCentral() }
+repositories {
+    // Loom добавляет нужные репозитории (Fabric, Mojang) сам,
+    // дополнительные не требуются
+}
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -17,18 +21,4 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
-processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
+processResources
